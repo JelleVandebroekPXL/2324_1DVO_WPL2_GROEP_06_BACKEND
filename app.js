@@ -1,8 +1,25 @@
+require('dotenv').config({ path: '.eth' });
+
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
+const nodemailer = require("nodemailer");
+const router = express.Router();
+
+console.log("Key: " + process.env.SUPABASE_KEY);
+
+const {createClient} = require('@supabase/supabase-js');
 const url = "https://lmmyakosessaktskgwpb.supabase.co";
-const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxtbXlha29zZXNzYWt0c2tnd3BiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxMTQ0Mjk3NiwiZXhwIjoyMDI3MDE4OTc2fQ.28CxKKBEbf3YIZS2hOkw-XoENRvpuKxYlwFmDqZPqgA";
+const key = process.env.SUPABASE_KEY;
+const supabase = createClient(url, key);
+
+const transporter = nodemailer.createTransport({
+    service: 'Outlook',
+    auth: {
+        user: process.env.EMAIL_ADDRESS,
+        pass: process.env.EMAIL_PASSWORD,
+    }
+});
 
 app.use(express.json());
 app.get('/', (req, res) => {
@@ -10,11 +27,7 @@ app.get('/', (req, res) => {
 })
 
 app.use(express.json());
-app.listen(3000, () => console.log("Server start op poort 3000"));
-
-const {createClient} = require('@supabase/supabase-js');
-const fs = require("fs");
-const supabase = createClient(url, key);
+app.listen(port, () => console.log(`Server start op poort ${port}`));
 
 app.get('/api/subscriptions', (req, res) => {
     supabase
@@ -50,22 +63,6 @@ app.get('/api/users', (req, res) => {
         });
 });
 
-app.get('/api/subscriptions', (req, res) => {
-    supabase
-        .from('subscriptions')
-        .select('*')
-        .then(response => {
-            console.log(response);
-            res.status(200).json(response.data);
-        })
-        .catch(error => {
-            console.log(error);
-            res.status(500).json({
-                message: 'Error reading from Database: ' +
-                    error.message
-            });
-        });
-});
 
 app.get('/api/winkelmand', (req, res) => {
     supabase
@@ -237,32 +234,6 @@ app.post('/api/producten/', (req, res) => {
         });
 });
 
-app.post('/api/subscriptions/', (req, res) => {
-    const subscriptionData = req.body;
-
-    const { id, name, email, confirmed, userid } = subscriptionData[0];
-
-    const subscriptionForInsertion = {
-        id,
-        name,
-        email,
-        confirmed,
-        userid
-    };
-
-    supabase
-        .from('subscriptions')
-        .insert(subscriptionForInsertion)
-        .then(response => {
-            console.log('Insert response:', response);
-            res.status(200).json({ message: 'Subscription added successfully', data: response.body });
-        })
-        .catch(error => {
-            console.error('Error adding subscription:', error);
-            res.status(500).json({ message: 'Error adding subscription: ' + error.message });
-        });
-});
-
 app.post('/api/winkelmand/', (req, res) => {
     const winkelmandData = req.body;
 
@@ -327,5 +298,109 @@ app.delete('/api/subscriptions/:id', (req, res) => {
         .catch(error => {
             console.error('Error deleting subscription:', error);
             res.status(500).json({ message: 'Error deleting subscription: ' + error.message });
+        });
+});
+
+app.listen(3001, () => {
+    console.log(`Example app listening on port ${port}`);
+});
+
+app.post('/new', (req, res) => {
+    const {name, email} = req.body;
+    const token = Math.floor(Math.random() * 100000000);
+
+    supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('email', email)
+        .then(({data, error}) => {
+            if (error) {
+                return res.status(500).json({error: 'Internal Server Error Fetching Subscriptions'});
+            }
+
+            if (data.length === 0) {
+                supabase
+                    .from('subscriptions')
+                    .insert([{name, email, confirmed: false, token}])
+                    .then(({data, error}) => {
+                        if (error) {
+                            console.log(error)
+                            return res.status(500).json({error: 'Internal Server Error Inserting Into DB'});
+                        }
+                        const baseUrl = 'http://localhost:3000/confirm'; // Basis-URL
+                        const tokenQueryParam = new URLSearchParams({ token }); // Maak een nieuw URLSearchParams-object met de token als queryparameter
+
+                        const urlWithQueryParam = `${baseUrl}?email=${email}&${tokenQueryParam.toString()}`;
+
+                        console.log(urlWithQueryParam);
+
+                        const mailOptions = {
+                            from: process.env.EMAIL_ADDRESS,
+                            to: email,
+                            subject: 'Confirm Your Subscription',
+                            text: `Click the following link to confirm your subscription: ${urlWithQueryParam}`
+                        };
+
+                        transporter.sendMail(mailOptions, (error, info) => {
+                            if (error) {
+                                console.log('Error sending email:', error);
+                                return res.status(500).json({error: 'Failed to send confirmation email'});
+                            }
+                            return res.status(201).json({message: 'Confirmation email sent successfully'});
+                        });
+                    });
+            } else {
+                return res.status(400).json({message: 'This email is already subscribed to our newsletter'});
+            }
+        });
+});
+
+app.get('/confirm', (req, res) => {
+    const { email, token } = req.query;
+    console.log(email, token);
+    supabase
+        .from('subscriptions')
+        .select('token')
+        .eq('email', email)
+        .then(({ data, error }) => {
+            console.log('Data:', data);
+            console.log('Error:', error);
+            if (error) {
+                return res.status(500).json({ error: 'Internal Server Error Matching Token And Email' });
+            }
+
+            supabase
+                .from('subscriptions')
+                .update({ confirmed: true })
+                .eq('email', email)
+                .then(({ data, error }) => {
+                    if (error) {
+                        return res.status(500).json({ error: 'Internal Server Error Updating "confirmed" Column' });
+                    }
+                    console.log("user confirmed");
+                    return res.status(301).redirect(`http://localhost:5173/confirm/${token}`);
+                });
+        });
+});
+
+app.delete('/unsubscribe/:token', (req, res) => {
+    const {token} = req.params;
+
+    supabase
+        .from('subscriptions')
+        .delete()
+        .eq('token', token)
+        .then(({data, error}) => {
+            if (error) {
+                return res.status(500).json({error: 'Internal Server Error Finding Token'});
+            }
+            if (data.length === 0) {
+                return res.status(404).json({message: 'Subscription not found'});
+            }
+            return res.status(201).json({message: 'Subscription unsubscribed successfully'});
+        })
+        .catch(err => {
+            console.error('Error unsubscribing:', err);
+            return res.status(500).json({error: 'Internal Server Error Unsubscribing'});
         });
 });
