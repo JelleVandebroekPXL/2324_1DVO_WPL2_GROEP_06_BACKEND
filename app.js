@@ -2,9 +2,10 @@ require('dotenv').config({ path: '.eth' });
 
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const port = process.env.PORT || 3000;
 const nodemailer = require("nodemailer");
-const router = express.Router();
+app.use(cors());
 
 console.log("Key: " + process.env.SUPABASE_KEY);
 
@@ -27,6 +28,11 @@ app.get('/', (req, res) => {
 })
 
 app.use(express.json());
+
+app.use(cors({
+    origin: 'http://localhost:5173', // Replace with the actual port of your Vue.js app
+    optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
+}));
 app.listen(port, () => console.log(`Server start op poort ${port}`));
 
 app.get('/api/subscriptions', (req, res) => {
@@ -46,6 +52,49 @@ app.get('/api/subscriptions', (req, res) => {
         });
 });
 
+app.get('/api/favorieten', (req, res) => {
+    supabase
+        .from('favorieten')
+        .select('*')
+        .then(response => {
+            console.log(response);
+            res.status(200).json(response.data);
+        })
+        .catch(error => {
+            console.log(error);
+            res.status(500).json({
+                message: 'Error reading from Database: ' +
+                    error.message
+            });
+        });
+});
+
+app.post('/api/favorieten/', (req, res) => {
+    const userData = req.body;
+    console.log(req.body);
+    const {
+        productid
+    } = userData[0];
+
+    const userForInsertion = {
+        productid
+    };
+
+    supabase
+        .from('favorieten')
+        .insert(userForInsertion)
+        .then(response => {
+            console.log('Insert response:', response);
+            res.status(200).json({message: 'User added successfully', data: response.body});
+        })
+        .catch(error => {
+            console.error('Error adding user:', error);
+            res.status(500).json({message: 'Error adding user: ' + error.message});
+        });
+});
+
+
+
 app.get('/api/users', (req, res) => {
     supabase
         .from('users')
@@ -62,6 +111,37 @@ app.get('/api/users', (req, res) => {
             });
         });
 });
+
+// Assuming you've set up Supabase and initialized the client
+
+app.post('/api/login', async (req, res) => {
+    const { useremail, userwachtwoord } = req.body;
+
+    try {
+        const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('useremail', useremail)
+            .eq('userwachtwoord', userwachtwoord)
+            .single();
+
+        if (error) {
+            throw error; // Throw the error received from Supabase
+        }
+
+        if (!data) {
+            throw new Error('Invalid credentials');
+        }
+
+        // Authentication successful
+        res.status(200).json({ redirectURL: '/' });
+
+    } catch (error) {
+        console.error('Login failed:', error.message);
+        res.status(401).json({ message: 'Login failed. Please check your credentials.' });
+    }
+});
+
 
 
 app.get('/api/winkelmand', (req, res) => {
@@ -152,47 +232,25 @@ app.get('/api/subscriptions/:id', (req, res) => {
         });
 });
 
-app.get('/api/users/:id', (req, res) => {
-    supabase
-        .from('users')
-        .select('*')
-        .eq('userid', req.params.id)
-        .then(response => {
-            console.log(response);
-            res.status(200).json(response.data);
-        })
-        .catch(error => {
-            console.log(error);
-            res.status(500).json({
-                message: 'Error reading from Database: ' +
-                    error.message
-            });
-        });
-});
-
 app.post('/api/users/', (req, res) => {
     const userData = req.body;
     console.log(req.body);
     const {
-        userid,
         uservoornaam,
         userachternaam,
         useremail,
         isman,
         userwachtwoord,
         nieuwpermail,
-        subscriptionid
     } = userData[0];
 
     const userForInsertion = {
-        userid,
         uservoornaam,
         userachternaam,
         useremail,
         isman,
         userwachtwoord,
         nieuwpermail,
-        subscriptionid
     };
 
     supabase
@@ -207,6 +265,7 @@ app.post('/api/users/', (req, res) => {
             res.status(500).json({message: 'Error adding user: ' + error.message});
         });
 });
+
 
 app.post('/api/producten/', (req, res) => {
     const productData = req.body;
