@@ -142,6 +142,23 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+app.get('/api/product/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const { data, error } = await supabase
+            .from('producten')
+            .select('*')
+            .eq('productid', id)
+            .single();
+
+        if (error) throw error;
+
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 
 app.get('/api/winkelmand', (req, res) => {
