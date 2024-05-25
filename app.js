@@ -403,7 +403,7 @@ app.post('/new', (req, res) => {
                             console.log(error)
                             return res.status(500).json({error: 'Internal Server Error Inserting Into DB'});
                         }
-                        const baseUrl = 'https://two324-1dvo-wpl2-groep-06-backend-1.onrender.com/confirm'; // Basis-URL
+                        const baseUrl = 'http://localhost:3000/confirm'; // Basis-URL
                         const tokenQueryParam = new URLSearchParams({ token }); // Maak een nieuw URLSearchParams-object met de token als queryparameter
 
                         const urlWithQueryParam = `${baseUrl}?email=${email}&${tokenQueryParam.toString()}`;
