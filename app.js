@@ -14,6 +14,24 @@ const url = "https://lmmyakosessaktskgwpb.supabase.co";
 const key = process.env.SUPABASE_KEY;
 const supabase = createClient(url, key);
 
+const express = require('express');
+const cors = require('cors');
+const app = express();
+
+const corsOptions = {
+    origin: 'https://comfortmeubel.netlify.app',
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
+// Your routes go here
+
+app.listen(3000, () => {
+    console.log('Server running on port 3000');
+});
+
+
 const transporter = nodemailer.createTransport({
     service: 'Outlook',
     auth: {
@@ -30,7 +48,7 @@ app.get('/', (req, res) => {
 app.use(express.json());
 
 app.use(cors({
-    origin: 'http://localhost:5173', // Replace with the actual port of your Vue.js app
+    origin: 'https://comfortmeubel.netlify.app/', // Replace with the actual port of your Vue.js app
     optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 }));
 app.listen(port, () => console.log(`Server start op poort ${port}`));
@@ -403,7 +421,7 @@ app.post('/new', (req, res) => {
                             console.log(error)
                             return res.status(500).json({error: 'Internal Server Error Inserting Into DB'});
                         }
-                        const baseUrl = 'http://localhost:3000/confirm'; // Basis-URL
+                        const baseUrl = 'https://two324-1dvo-wpl2-groep-06-backend-1.onrender.com/confirm'; // Basis-URL
                         const tokenQueryParam = new URLSearchParams({ token }); // Maak een nieuw URLSearchParams-object met de token als queryparameter
 
                         const urlWithQueryParam = `${baseUrl}?email=${email}&${tokenQueryParam.toString()}`;
@@ -454,7 +472,7 @@ app.get('/confirm', (req, res) => {
                         return res.status(500).json({ error: 'Internal Server Error Updating "confirmed" Column' });
                     }
                     console.log("user confirmed");
-                    return res.status(301).redirect(`http://localhost:5173/confirm/${token}`);
+                    return res.status(301).redirect(`https://comfortmeubel.netlify.app/confirm/${token}`);
                 });
         });
 });
