@@ -14,6 +14,24 @@ const url = "https://lmmyakosessaktskgwpb.supabase.co";
 const key = process.env.SUPABASE_KEY;
 const supabase = createClient(url, key);
 
+const express = require('express');
+const cors = require('cors');
+const app = express();
+
+const corsOptions = {
+    origin: 'https://comfortmeubel.netlify.app',
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
+// Your routes go here
+
+app.listen(3000, () => {
+    console.log('Server running on port 3000');
+});
+
+
 const transporter = nodemailer.createTransport({
     service: 'Outlook',
     auth: {
