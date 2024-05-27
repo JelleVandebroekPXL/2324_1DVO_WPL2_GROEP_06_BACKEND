@@ -17,7 +17,7 @@ const key = process.env.SUPABASE_KEY;
 const supabase = createClient(url, key);
 
 const corsOptions = {
-    origin: '*',
+    origin: 'https://comfortmeubel.netlify.app/',
     optionsSuccessStatus: 200
 };
 
