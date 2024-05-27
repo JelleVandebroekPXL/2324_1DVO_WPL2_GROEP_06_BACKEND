@@ -4,9 +4,6 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const nodemailer = require("nodemailer");
-const corsMiddleware = require("./cors");
-
-app.use(corsMiddleware)
 
 app.use(cors());
 
@@ -20,7 +17,7 @@ const key = process.env.SUPABASE_KEY;
 const supabase = createClient(url, key);
 
 const corsOptions = {
-    origin: 'https://comfortmeubel.netlify.app',
+    origin: '*',
     optionsSuccessStatus: 200
 };
 
