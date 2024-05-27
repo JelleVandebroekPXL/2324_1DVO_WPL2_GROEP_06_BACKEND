@@ -3,29 +3,11 @@ require('dotenv').config({ path: '.eth' });
 const express = require('express');
 const app = express();
 const cors = require('cors');
-const port = process.env.PORT || 3000;
 const nodemailer = require("nodemailer");
+
 app.use(cors());
 
-console.log("Key: " + process.env.SUPABASE_KEY);
-
-
-
-require('dotenv').config({ path: '.eth' });
-
-const express = require('express');
-const app = express();
 const port = process.env.PORT || 3000;
-const nodemailer = require("nodemailer");
-
-// CORS middleware
-const cors = require('cors');
-const corsOptions = {
-    origin: 'https://comfortmeubel.netlify.app',
-    optionsSuccessStatus: 200
-};
-const corsMiddleware = cors(corsOptions);
-app.use(corsMiddleware);
 
 console.log("Key: " + process.env.SUPABASE_KEY);
 
@@ -33,44 +15,6 @@ const {createClient} = require('@supabase/supabase-js');
 const url = "https://lmmyakosessaktskgwpb.supabase.co";
 const key = process.env.SUPABASE_KEY;
 const supabase = createClient(url, key);
-
-app.use(express.json());
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-});
-
-// CORS middleware
-const cors = require('cors');
-const corsOptions = {
-    origin: 'https://comfortmeubel.netlify.app',
-    optionsSuccessStatus: 200
-};
-const corsMiddleware = cors(corsOptions);
-app.use(corsMiddleware);
-
-// Your routes go here
-
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-});
-
-// Nodemailer transporter setup
-const transporter = nodemailer.createTransport({
-    service: 'Outlook',
-    auth: {
-        user: process.env.EMAIL_ADDRESS,
-        pass: process.env.EMAIL_PASSWORD,
-    }
-});
-
-// Define your API routes here
-// Assuming the existing routes continue from here
-
-const {createClient} = require('@supabase/supabase-js');
-const url = "https://lmmyakosessaktskgwpb.supabase.co";
-const key = process.env.SUPABASE_KEY;
-const supabase = createClient(url, key);
-
 
 const corsOptions = {
     origin: 'https://comfortmeubel.netlify.app',
