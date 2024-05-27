@@ -4,6 +4,9 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const nodemailer = require("nodemailer");
+const corsMiddleware = require("./cors");
+
+app.use(corsMiddleware)
 
 app.use(cors());
 
