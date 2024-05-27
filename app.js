@@ -15,13 +15,13 @@ const {createClient} = require('@supabase/supabase-js');
 const url = "https://lmmyakosessaktskgwpb.supabase.co";
 const key = process.env.SUPABASE_KEY;
 const supabase = createClient(url, key);
-
-const corsOptions = {
-    origin: 'https://comfortmeubel.netlify.app/',
-    optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
+//
+// const corsOptions = {
+//     origin: 'https://comfortmeubel.netlify.app/',
+//     optionsSuccessStatus: 200
+// };
+//
+// app.use(cors(corsOptions));
 
 // Your routes go here
 
