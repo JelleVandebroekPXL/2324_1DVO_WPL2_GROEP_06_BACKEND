@@ -14,8 +14,6 @@ const url = "https://lmmyakosessaktskgwpb.supabase.co";
 const key = process.env.SUPABASE_KEY;
 const supabase = createClient(url, key);
 
-const cors = require('cors');
-const app = express();
 
 const corsOptions = {
     origin: 'https://comfortmeubel.netlify.app',
