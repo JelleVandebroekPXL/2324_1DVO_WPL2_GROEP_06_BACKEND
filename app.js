@@ -27,6 +27,33 @@ const corsOptions = {
 const corsMiddleware = cors(corsOptions);
 app.use(corsMiddleware);
 
+console.log("Key: " + process.env.SUPABASE_KEY);
+
+const {createClient} = require('@supabase/supabase-js');
+const url = "https://lmmyakosessaktskgwpb.supabase.co";
+const key = process.env.SUPABASE_KEY;
+const supabase = createClient(url, key);
+
+app.use(express.json());
+app.get('/', (req, res) => {
+    res.send('Hello World!');
+});
+
+// CORS middleware
+const cors = require('cors');
+const corsOptions = {
+    origin: 'https://comfortmeubel.netlify.app',
+    optionsSuccessStatus: 200
+};
+const corsMiddleware = cors(corsOptions);
+app.use(corsMiddleware);
+
+// Your routes go here
+
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
+
 // Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
     service: 'Outlook',
