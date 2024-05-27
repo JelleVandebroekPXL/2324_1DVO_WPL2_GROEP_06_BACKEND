@@ -14,7 +14,6 @@ const url = "https://lmmyakosessaktskgwpb.supabase.co";
 const key = process.env.SUPABASE_KEY;
 const supabase = createClient(url, key);
 
-const express = require('express');
 const cors = require('cors');
 const app = express();
 
