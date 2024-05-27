@@ -5,6 +5,11 @@ const app = express();
 const cors = require('cors');
 const nodemailer = require("nodemailer");
 
+// const corsOptions = {
+//     origin: '*',
+//     optionsSuccessStatus: 200
+// };
+app.use(express.json());
 app.use(cors());
 
 const port = process.env.PORT || 3000;
@@ -15,13 +20,6 @@ const {createClient} = require('@supabase/supabase-js');
 const url = "https://lmmyakosessaktskgwpb.supabase.co";
 const key = process.env.SUPABASE_KEY;
 const supabase = createClient(url, key);
-
-const corsOptions = {
-    origin: '*',
-    optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
 
 //Your routes go here
 
@@ -38,17 +36,11 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-app.use(express.json());
+
 app.get('/', (req, res) => {
     res.send('Hello World!');
 })
 
-app.use(express.json());
-
-app.use(cors({
-    origin: 'https://comfortmeubel.netlify.app/', // Replace with the actual port of your Vue.js app
-    optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
-}));
 app.listen(port, () => console.log(`Server start op poort ${port}`));
 
 app.get('/api/subscriptions', (req, res) => {
